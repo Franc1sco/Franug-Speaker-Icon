@@ -83,18 +83,18 @@ public CreateSprite(client)
 
 		TeleportEntity(m_unEnt, m_flPosition, NULL_VECTOR, NULL_VECTOR);
 	   
-		//SetVariantString("!activator");
-		//AcceptEntityInput(m_unEnt, "SetParent", client, m_unEnt, 0);
+		SetVariantString("!activator");
+		AcceptEntityInput(m_unEnt, "SetParent", client, m_unEnt, 0);
 		
 		//SetVariantString("francisco");
 		SetVariantString(iTarget);
-		AcceptEntityInput(Ent, "SetParent", Ent, Ent, 0);
+		//AcceptEntityInput(iTarget, "SetParent", Ent, Ent, 0);
 	  
 		g_unClientSprite[client] = EntIndexToEntRef(m_unEnt);
 	}
 }
 
-public bool:OnClientSpeakingEx(client)
+public OnClientSpeakingEx(client)
 {
 	if(!IsClientInGame(client) || !IsPlayerAlive(client))
 		return;
