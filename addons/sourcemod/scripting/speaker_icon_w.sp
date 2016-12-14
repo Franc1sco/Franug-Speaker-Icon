@@ -2,6 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 #include <voiceannounce_ex>
 
 new g_unClientSprite[MAXPLAYERS+1]={INVALID_ENT_REFERENCE,...};
@@ -11,7 +12,7 @@ public Plugin:myinfo =
 	name = "SM Speaker Icon",
 	author = "Franc1sco steam: franug",
 	description = "",
-	version = "2.0",
+	version = "2.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -71,27 +72,37 @@ public CreateSprite(client)
 	new m_unEnt = CreateEntityByName("env_sprite");
 	if (IsValidEntity(m_unEnt))
 	{
-		decl String:iTarget[16];
-		Format(iTarget, 16, "client%d", client);
-		DispatchKeyValue(client, "targetname", iTarget);
 		DispatchKeyValue(m_unEnt, "model", "materials/sprites/sg_micicon64.vmt");
 		DispatchSpawn(m_unEnt);
 
-		new Float:m_flPosition[3];
-		GetClientAbsOrigin(client, m_flPosition);
-		m_flPosition[2]+=80.0;
+		decl Float:m_flPosition[3];
+		GetClientEyePosition(client, m_flPosition);
+		m_flPosition[2] += 20.0;
 
 		TeleportEntity(m_unEnt, m_flPosition, NULL_VECTOR, NULL_VECTOR);
 	   
 		SetVariantString("!activator");
 		AcceptEntityInput(m_unEnt, "SetParent", client, m_unEnt, 0);
 		
-		//SetVariantString("francisco");
-		SetVariantString(iTarget);
-		//AcceptEntityInput(iTarget, "SetParent", Ent, Ent, 0);
+		SetEntPropEnt(m_unEnt, Prop_Data, "m_hOwnerEntity", client);
 	  
 		g_unClientSprite[client] = EntIndexToEntRef(m_unEnt);
+		
+		SetEdictFlags(m_unEnt, 0);
+		SetEdictFlags(m_unEnt, FL_EDICT_FULLCHECK);
+		
+		SDKHook(m_unEnt, SDKHook_SetTransmit, OnTrasnmit);
 	}
+}
+
+public Action:OnTrasnmit(entity, client)
+{
+	new owner = GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity");
+	if (owner == client || GetListenOverride(client, owner) == Listen_No || IsClientMuted(client, owner))
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public OnClientSpeakingEx(client)
